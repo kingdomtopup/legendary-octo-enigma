@@ -1,0 +1,159 @@
+[project]
+name = "LI_FUNG"
+dynamic = ["version"]
+description = "A TikTok video downloader that downloads source quality videos utilizing TikWM API."
+readme = "README.md"
+authors = [{ name = "Scoofszlo", email = "wslifung@gmail.com" }]
+requires-python = ">=3.12"
+dependencies = [
+    "aiofiles>=24.1.0",
+    "aiohttp>=3.12.15",
+    "bs4>=0.0.2",
+    "pip>=25.1.1",
+    "platformdirs>=4.3.8",
+    "playwright>=1.54.0",
+    "requests>=2.32.4",
+    "rich>=14.0.0",
+    "rich-argparse>=1.7.1",
+    "toml>=0.10.2",
+]
+
+[build-system]
+requires = ["setuptools", "setuptools-scm>=8"]
+build-backend = "setuptools.build_meta"
+
+[dependency-groups]
+dev = [
+    "mypy>=1.18.2",
+    "poethepoet>=0.41.0",
+    "pylint>=4.0.4",
+    "pyright>=1.1.408",
+    "pytest>=9.0.2",
+    "ruff>=0.15.1",
+    "setuptools-scm>=9.2.0",
+    "ty>=0.0.17",
+    "types-aiofiles>=24.1.0.20250822",
+    "types-requests>=2.32.4.20250913",
+    "types-toml>=0.10.8.20240310",
+]
+
+[project.scripts]
+tikorgzo = "tikorgzo.app:run"
+
+[tool.pytest.ini_options]
+norecursedirs = ["playground"]
+
+[tool.pylint."messages control"]
+disable = """
+    missing-module-docstring,
+    missing-function-docstring,
+    invalid-name,
+    import-outside-toplevel, 
+    missing-class-docstring,
+    too-few-public-methods,
+    broad-exception-caught
+    """
+
+[tool.pylint.FORMAT]
+max-line-length = 200
+
+[tool.ruff]
+line-length = 200
+extend-exclude = ["playground/", "tests/"]
+
+[tool.ruff.lint]
+select = ["ALL"]
+extend-select = ["E", "W", "I"]
+ignore = [
+    # Consider removing
+    "PLR6301", # Checks for the presence of unused self parameter in methods definitions.
+    "FBT001",  # Boolean-typed positional argument in function
+    "FBT002",  # Boolean-typed keyword argument in function
+    "S101",    # Use of assertion
+    "C901",    # Checks for functions that are too complex based on McCabe complexity
+    "PLR0915", # Checks for functions or methods with too many statements.
+    "TRY300",  # Checks for return statements in try blocks. Personally, I think it's better to have
+    # return statement directly inside the try block
+
+    # Imports, exceptions, os module usages, and others
+    "PLC0415", # import should be on top of the file
+    "PTH107",  # Checks for uses of os.remove (encourages using pathlib.Path.unlink instead))
+    "PTH110",  # Checks for uses of os.path.exists (encourages using pathlib.Path.exists instead))
+    "SIM105",  #Use `contextlib.suppress(asyncio.CancelledError)` instead of `try`-`except`-`pass` 
+    "BLE001",  # Checks for except clauses that catch all exceptions
+    "PLR1702", # Nested blocks
+    "SIM108",  # Uses ternary or binary ooperator instead of `if`-`else` statement for simple assignments
+
+    # Docstyle
+    "D202", # No blank lines allowed after function docstring
+    "D205", # This D205 (which is about 1 blank line required between summary
+    # line and description in docstring) is ignored because sometimes
+    # you have docstrings that don't need summary and only description,
+    # and that description can be long and has chances to be separated
+    # into multiple lines so D205 may be violated in such cases    
+
+    "DOC201", # Missing returns in function docstring
+    "DOC202", # Checks for unnecessary "Returns:" section in function docstring
+    "D100",   # Missing docstring in public module
+    "D101",   # Missing docstring in public class
+    "D102",   # Missing docstring in public method
+    "D103",   # Missing docstring in public function
+    "D104",   # Missing docstring in public package
+    "D105",   # Missing docstring in magic method
+    "D106",   # Missing docstring in public nested class
+    "D107",   # Missing docstring in __init__
+    "DOC501", # Checks for function docstrings that do not document all explicitly raised exceptions.
+    "D401",   # First line should be in imperative mood; try rephrasing
+    "CPY001", # Checks for absence of copyright notices
+]
+preview = true
+
+[tool.pyright]
+include = ["src/"]
+exclude = ["playground/", "tests/"]
+typeCheckingMode = "strict"
+
+[tool.ruff.format]
+preview = true
+
+[tool.poe.tasks.test]
+help = "Run tests"
+cmd = "pytest"
+
+[tool.poe.tasks.lint]
+help = "Run linters"
+parallel = [
+    { cmd = "ruff check" },
+    { cmd = "pylint src" },
+]
+ignore_fail = "return_non_zero"
+
+[tool.poe.tasks.lint-fix]
+help = "Fix linting issues (uses ruff)"
+cmd = "ruff check --fix"
+
+[tool.poe.tasks.lint-watch]
+help = "Watch for linting issues (uses ruff)"
+cmd = "ruff check --watch"
+
+[tool.poe.tasks.type]
+help = "Run type checking"
+parallel = [
+    { cmd = "pyright src" },
+    { cmd = "ty check src" },
+    { cmd = "mypy -p tikorgzo --check-untyped-defs --disallow-incomplete-defs --disallow-untyped-defs" },
+]
+ignore_fail = "return_non_zero"
+
+[tool.poe.tasks.type-watch]
+help = "Watch for type checking issues (uses pyright)"
+cmd = "pyright --watch"
+
+[tool.poe.tasks.type-watch-2]
+help = "Watch for type checking issues (uses ty)"
+cmd = "ty check --watch"
+
+[tool.setuptools_scm]
+version_file = "src/tikorgzo/_version.py"
+version_scheme = "guess-next-dev"
+local_scheme = "no-local-version"
